@@ -98,29 +98,9 @@ extern int8_t CDC_Receive_FS(uint8_t* buf, uint32_t *len_)
 
 }
 */
-/*
-int get_char(){
-	
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 
-	if (uart_buffer_cur_len==0){
-		return 0;
-	}
-	uint8_t i;
-	// move buffer 1 char left
-	for (i=0;i<BUFFER_LEN-1;i++) {
-		buffer[i] = buffer[i+1];
-	}
-	// copy char from uart_buffer, reduce uart_len and move read_pos 
-	uart_buffer_read++;
-	if (uart_buffer_read >= UART_BUFFER_LEN) uart_buffer_read = 0; 
-	buffer[BUFFER_LEN-1] = uart_buffer[uart_buffer_read];
-	uart_buffer_cur_len--;
-	
-	CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
-	return 1;
-}	
-*/
+
+
 
 
 /*
@@ -156,6 +136,27 @@ static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+int get_char(){
+	
+  
+
+	if (uart_buffer_cur_len==0){
+		return 0;
+	}
+	uint8_t i;
+	// move buffer 1 char left
+	for (i=0;i<BUFFER_LEN-1;i++) {
+		buffer[i] = buffer[i+1];
+	}
+	// copy char from uart_buffer, reduce uart_len and move read_pos 
+	uart_buffer_read++;
+	if (uart_buffer_read >= UART_BUFFER_LEN) uart_buffer_read = 0; 
+	buffer[BUFFER_LEN-1] = uart_buffer[uart_buffer_read];
+	uart_buffer_cur_len--;
+	
+	CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	return 1;
+}	
 
 /* USER CODE END PFP */
 
@@ -210,10 +211,10 @@ int main(void)
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 			counter = 0;
 			//CDC_Transmit_FS((unsigned char*)str_tx, strlen(str_tx));
-			CDC_Transmit_FS((unsigned char*)uart_buffer, 32);
+			//CDC_Transmit_FS((unsigned char*)uart_buffer, 32);
 			
 		}
-		
+		get_char();
 
                 
 		// --------------------------------------------------
