@@ -165,7 +165,7 @@ static void MX_GPIO_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	char str_tx[21];
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -188,7 +188,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-
+ sprintf(str_tx,"USB Transmit\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -202,7 +202,11 @@ int main(void)
 		if (counter>10000000){
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 			counter = 0;
+			CDC_Transmit_FS((unsigned char*)str_tx, strlen(str_tx));
 		}
+		
+
+                
 		// --------------------------------------------------
 		
 		//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
