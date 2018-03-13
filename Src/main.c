@@ -63,52 +63,15 @@ int check_packet(){
 }
 
 
-/*
-uint32_t uart_buffer_cur_len =0;
-#define  UART_BUFFER_LEN  32
-uint32_t uart_buffer_write = 0;
-uint8_t uart_buffer[UART_BUFFER_LEN];
-uint32_t uart_buffer_read = 0;
-*/
-/*
-extern int8_t CDC_Receive_FS(uint8_t* buf, uint32_t *len_)
-{
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-  /* USER CODE BEGIN 6 */
-	/*
-  
-		uint32_t i;
-		uint32_t len;
-		if (uart_buffer_cur_len + len > UART_BUFFER_LEN){
-		len = UART_BUFFER_LEN - uart_buffer_cur_len;
-	} else {
-			len = *len_;
-		}
-		for (i=0; i<len; i++){
-			uart_buffer_write ++; 
-			if (uart_buffer_write >= UART_BUFFER_LEN) uart_buffer_write = 0; 
-			uart_buffer[uart_buffer_write] = buf[i];
-	}
-		uart_buffer_cur_len += len;
-		
-	
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  return (USBD_OK);
-
-}
-*/
 
 
 
 
 
 /*
-void safe_stop(){}
 
-void watchdog(){
-	if (packet_wd_timeout > uptime && state==ENABLE){ safe_stop(); }
-}
+
+
 
 */ 
 
@@ -136,6 +99,11 @@ static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+void safe_stop(){}
+void watchdog(){
+	if (packet_wd_timeout > uptime && state==ENABLE){ safe_stop(); }
+}
+
 int get_char(){
 	
   
