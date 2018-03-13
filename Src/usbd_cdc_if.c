@@ -133,7 +133,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-
+extern char str_rx[21];
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -304,7 +304,7 @@ uint32_t uart_buffer_write = 0;
 uint8_t uart_buffer[UART_BUFFER_LEN];
 uint32_t uart_buffer_read = 0;
 
-static int8_t CDC_Receive_FS(uint8_t* buf, uint32_t *len_)
+static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
 	
 	
@@ -323,8 +323,12 @@ static int8_t CDC_Receive_FS(uint8_t* buf, uint32_t *len_)
 	}
 		uart_buffer_cur_len += len;
 	*/
-	CDC_Transmit_FS(buf, *len_);
-	USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &buf[0]);
+	
+	 strncpy(str_rx,(char*)Buf,*Len);
+
+        str_rx[*Len]=0;
+	//CDC_Transmit_FS(buf, *len_);
+	//USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
 	
