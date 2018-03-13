@@ -3516,8 +3516,8 @@
       <ActiveTab>3</ActiveTab>
       <Doc>
         <Name>../Src/usbd_cdc_if.c</Name>
-        <ColumnNumber>4</ColumnNumber>
-        <TopLine>122</TopLine>
+        <ColumnNumber>23</ColumnNumber>
+        <TopLine>310</TopLine>
         <CurrentLine>331</CurrentLine>
         <Folding>0</Folding>
         <ContractedFolders></ContractedFolders>
@@ -3544,8 +3544,8 @@
       <Doc>
         <Name>../Src/main.c</Name>
         <ColumnNumber>16</ColumnNumber>
-        <TopLine>135</TopLine>
-        <CurrentLine>143</CurrentLine>
+        <TopLine>202</TopLine>
+        <CurrentLine>218</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3562,7 +3562,7 @@
       <Doc>
         <Name>..\..\..\..\..\Downloads\uart.c</Name>
         <ColumnNumber>1</ColumnNumber>
-        <TopLine>50</TopLine>
+        <TopLine>10</TopLine>
         <CurrentLine>59</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>

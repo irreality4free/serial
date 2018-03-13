@@ -141,6 +141,11 @@ void watchdog(){
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 char str_rx[21];
+uint32_t uart_buffer_cur_len =0;
+#define  UART_BUFFER_LEN  32
+uint32_t uart_buffer_write = 0;
+uint8_t uart_buffer[UART_BUFFER_LEN];
+uint32_t uart_buffer_read = 0;
 
 /* USER CODE END PV */
 
@@ -205,7 +210,7 @@ int main(void)
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 			counter = 0;
 			//CDC_Transmit_FS((unsigned char*)str_tx, strlen(str_tx));
-			CDC_Transmit_FS((unsigned char*)str_rx, strlen(str_rx));
+			CDC_Transmit_FS((unsigned char*)uart_buffer, 32);
 			
 		}
 		

@@ -134,6 +134,11 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
 extern char str_rx[21];
+extern uint32_t uart_buffer_cur_len;
+#define UART_BUFFER_LEN 32
+extern uint32_t uart_buffer_write;
+extern uint8_t uart_buffer[32];
+extern uint32_t uart_buffer_read ;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -298,33 +303,30 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-uint32_t uart_buffer_cur_len =0;
-#define  UART_BUFFER_LEN  32
-uint32_t uart_buffer_write = 0;
-uint8_t uart_buffer[UART_BUFFER_LEN];
-uint32_t uart_buffer_read = 0;
+
 
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
 	
 	
-	/*
+	
 		uint32_t i;
 		uint32_t len;
-		if (uart_buffer_cur_len + *len_ > UART_BUFFER_LEN){
+		if (uart_buffer_cur_len + *Len > UART_BUFFER_LEN){
 		len = UART_BUFFER_LEN - uart_buffer_cur_len;
 	} else {
-			len = *len_;
+			len = *Len;
 		}
 		for (i=0; i<len; i++){
 			uart_buffer_write ++; 
 			if (uart_buffer_write >= UART_BUFFER_LEN) uart_buffer_write = 0; 
-			uart_buffer[uart_buffer_write] = buf[i];
+			uart_buffer[uart_buffer_write] = Buf[i];
 	}
 		uart_buffer_cur_len += len;
-	*/
+	
 	
 	 strncpy(str_rx,(char*)Buf,*Len);
+	//strncpy(str_rx,(char*)uart_buffer,32);
 
         str_rx[*Len]=0;
 	//CDC_Transmit_FS(buf, *len_);
