@@ -46,21 +46,24 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+
+//#pragma once 
+ 
+#include <stdint.h>
+#include <stddef.h> 
 #include "main.h"
 #include "stm32f1xx_hal.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
-int packet_wd_timeout;
-#define BUFFER_LEN 32
-char buffer[BUFFER_LEN];
-int uptime;
-int state;
-int PACKET_WATCHDOG_TIMEOUT;
-void send_state(void);
-int check_packet(){
-	return 1;
-}
+//int packet_wd_timeout;
+//
+//
+//int uptime;
+//int state;
+//int PACKET_WATCHDOG_TIMEOUT;
+//void send_state(void);
+
 
 
 
@@ -83,31 +86,323 @@ int check_packet(){
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+#define BUFFER_LEN 32
 char str_rx[21];
 uint32_t uart_buffer_cur_len =0;
 #define  UART_BUFFER_LEN  32
 uint32_t uart_buffer_write = 0;
 uint8_t uart_buffer[UART_BUFFER_LEN];
 uint32_t uart_buffer_read = 0;
+char buffer[BUFFER_LEN];
+uint8_t control_cmd;
+
+
+
+
+
+
+
+#define CRC_SIZE 2
+#define HEADER_SIZE 1
+#define UAV_ADDRESS 1
+#define BIM_ADDRESS 1
+#define BIM_PACK_HEADER_SIZE 1
+#define BIM_CONTROL_PACK_LEN 1
+
+#define PROTOCOL_CRC_INIT 0xFFFF
+#define PROTOCOL_CRC_VALIDATE 0xF0B8
+#define PERIOD 50
+#define MIN_PACK_NENGTH 28
+#define ENGINE_INDEX 8
+#define LEFT_OFS_INDEX 8
+#define RIGHT_OFS_INDEX 9
+#define ID_INDEX 6
+#define SET_POSITION 1
+#define BIM_ENABLE 3
+#define MARKER 0xFEAA
+#define ADDRESS 0
+#define VERSION 1
+#define BIM_STATUS_ID 2
+#define NPOWER 1
+#define BATTERY_LOW 1674.
+
+#define BATTERY_RANGE 2.49
+#define CONNECTION_LOST 5000
+#define BREAK_TIMEOUT 2000
+
+#define ADC_TO_VOLTAGE 37.70974124
+
+
+
+#define DEADZONE 500
+enum {OFF, ON, SAFEOFF};
+enum {LEFT, RIGHT};
+enum {DOWN, UP};
+
+uint32_t runtime = 0;
+uint32_t pot[2] = {0, 0};
+uint8_t percPot1, percPot2, battery, temperature;
+uint8_t left_ofs, right_ofs;
+uint8_t message[16];
+uint8_t engine = 0;
+uint32_t badCRC = 0;
+uint32_t coord[2] = {0, 0};
+uint32_t targetCoord[2] = {0, 0};
+uint32_t up[2] = {0, 0};
+uint32_t lastConnect = 0;
+uint8_t turnOff = 0;
+uint32_t breakTimeout[2] = {0, 0};
+uint32_t breakEnable[2] = {0, 0};
+
+uint8_t pos_cmd[2] = {0,0};
+uint8_t packet_wd_timeout = 50;
+uint32_t uptime = 0;
+
+
+
+/*
+extern uint8_t buffer[256];
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
+extern TIM_HandleTypeDef htim1;
+*/
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+/*
+enum { 
 
+    PROTOCOL_CRC_INIT = 0xFFFF,     
+		PROTOCOL_CRC_VALIDATE = 0xF0B8 
+}; */
+             
 
+struct uav_bim_state_t {  
+	uint8_t left_ofs;  
+	uint8_t right_ofs; 
+};
+
+struct protocol_header_t
+{
+ uint16_t marker;
+ uint16_t sz;
+ uint8_t src;
+ uint8_t dst;
+ uint8_t id;
+ uint8_t version;
+	
+};
+
+struct uav_bim_status_t
+{
+ uint32_t uptime;
+ uint32_t badcrc;
+ uint8_t left_ofs;
+ uint8_t right_ofs;
+ uint8_t enabled;
+ uint8_t npower;
+ uint8_t power[];
+};
+struct uav_bim_control_t
+{
+ uint8_t engine;
+};
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void safe_stop(){}
+/*	
+void crcGood(){
+	
+	#pragma pack(push,1)
+	struct uav_bim_status_t {
+		uint16_t marker;
+		uint16_t length;
+		uint8_t senderAddress;
+		uint8_t targetAddress;
+		uint8_t id;
+		uint8_t version;
+		
+		uint32_t uptime;
+		uint32_t badcrc;
+		uint8_t left_ofs;
+		uint8_t right_ofs;
+		uint8_t enabled;
+		uint8_t npower;
+		uint8_t power[1];
+		uint16_t crc;
+	} answer;
+	#pragma pack(pop)
+	
+	answer.marker=MARKER;
+	answer.length = sizeof(answer);
+	answer.senderAddress = ADDRESS;
+	answer.targetAddress = ADDRESS;
+	answer.id = BIM_STATUS_ID;
+	answer.version = VERSION;
+	
+	answer.uptime = runtime;
+	answer.badcrc = badCRC;
+	answer.left_ofs = percPot1;
+	answer.right_ofs = percPot2;
+	answer.enabled = engine;
+	answer.npower = NPOWER;
+	answer.power[0] = battery;
+	
+	uint8_t * arr = (uint8_t *) &answer;
+	answer.crc = protocol_crc_calc(arr, answer.length-2);
+	HAL_UART_Transmit(&huart2, arr, answer.length, 100);
+	
+}
+
+int send_pack(){
+	#pragma pack(push,1)
+	struct uav_bim_status_t {
+		uint16_t marker;
+		uint16_t length;
+		uint8_t senderAddress;
+		uint8_t targetAddress;
+		uint8_t id;
+		uint8_t version;
+		
+		uint32_t uptime;
+		uint32_t badcrc;
+		uint8_t left_ofs;
+		uint8_t right_ofs;
+		uint8_t enabled;
+		uint8_t npower;
+		uint8_t power[1];
+		uint16_t crc;
+	} pack;
+	#pragma pack(pop)
+	
+	pack.marker = 			MARKER;
+	pack.length = 			sizeof(pack);
+	pack.senderAddress =	BIM_ADDRESS;
+	pack.targetAddress = 	UAV_ADDRESS;
+	pack.id = 				BIM_STATUS_PACK_ID;
+	pack.version = 			BIM_STATUS_PACK_VERSION;
+	
+	pack.uptime = 			runtime;
+	pack.badcrc = 			badCRC;
+	pack.left_ofs = 		pos_fb[0];
+	pack.right_ofs = 		pos_fb[1];
+	pack.enabled = 			state;
+	pack.npower = 			BIM_BATTERY_COUNT;
+	for (uint8_t i=0; i<BIM_BATTERY_COUNT; i++)
+		pack.power[i] = 		battery[i];
+	
+	uint8_t * arr = (uint8_t *) &pack;
+	pack.crc = protocol_crc_calc(arr, pack.length-2);
+	HAL_UART_Transmit(&huart2, arr, pack.length, 100);
+}
+
+
+	*/
+	
 void watchdog(){
 	if (packet_wd_timeout > uptime && state==ENABLE){ safe_stop(); }
 }
 
+int check_header(uint8_t n, uint8_t id, uint8_t version){
+	struct protocol_header_t* h = (struct protocol_header_t*)(buffer + BUFFER_LEN - n - CRC_SIZE - BIM_PACK_HEADER_SIZE);
+	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	if (h->marker != 0xFFAE) return 0;
+	if (h->sz != n + CRC_SIZE + HEADER_SIZE) return 0;
+	if (h->src != UAV_ADDRESS) return 0;
+	if (h->dst != BIM_ADDRESS) return 0;
+	if (h->id != id) return 0;
+	if (h->version != version) return 0;
+	return 1;
+}
+
+static inline void protocol_crc_acc(uint8_t v, uint16_t *pcrc)
+{
+ /* Accumulate one byte of data into the CRC */
+ uint8_t tmp = v ^ (uint8_t)(*pcrc & 0xff);
+ tmp ^= (tmp << 4);
+ *pcrc = (*pcrc >> 8) ^ (tmp << 8) ^ (tmp << 3) ^ (tmp >> 4);
+}
+
+static inline void protocol_crc_acc_buf(
+ uint16_t* pcrc, const void* buf, size_t sz)
+{
+ const uint8_t* p = (const uint8_t*)buf;
+ while(sz--)
+ protocol_crc_acc(*p++, pcrc);
+}
+
+static inline void protocol_crc_init(uint16_t* pcrc)
+{
+ *pcrc = PROTOCOL_CRC_INIT;
+}
+
+static inline uint16_t protocol_crc_calc(const void* buf, size_t sz)
+{
+ uint16_t crc;
+ protocol_crc_init(&crc);
+ protocol_crc_acc_buf(&crc, buf, sz);
+ return crc;
+}
+
+int check_crc(uint32_t crc, uint8_t n){
+	uint16_t*	crc_recv = (uint16_t*)(buffer + BUFFER_LEN - CRC_SIZE );
+	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	if (*crc_recv == crc) return 1;
+	
+	else return 0;
+}
+
+int check_uav_bim_state_pack(){
+	#define BIM_STATE_PACK_LEN	4
+	#define BIM_STATE_PACK_ID 	1
+	#define BIM_STATE_PACK_VER	1
+	if (!check_header(BIM_STATE_PACK_LEN, BIM_STATE_PACK_ID, BIM_STATE_PACK_VER)) return 0;
+	uint16_t crc_comp = protocol_crc_calc(buffer, BUFFER_LEN);
+	if (!check_crc(crc_comp,BIM_CONTROL_PACK_LEN)) return 0;
+	struct uav_bim_state_t* state = (struct uav_bim_state_t*)(buffer + BUFFER_LEN - BIM_STATE_PACK_LEN - CRC_SIZE);
+	pos_cmd[0] = state->left_ofs; 
+	pos_cmd[1] = state->right_ofs; 
+	return 1;
+}
+
+int check_uav_bim_control_pack(){
+	#define BIM_CONTROL_PACK_LEN	1
+	#define BIM_CONTROL_PACK_ID 	3
+	#define BIM_CONTROL_PACK_VER	1
+	if (!check_header(BIM_CONTROL_PACK_LEN, BIM_CONTROL_PACK_ID, BIM_CONTROL_PACK_VER)) return 0;
+	uint16_t crc_comp = protocol_crc_calc(buffer, BUFFER_LEN);
+	if (!check_crc(crc_comp, BIM_CONTROL_PACK_LEN)) return 0;
+	struct uav_bim_control_t* control = (struct uav_bim_control_t*)(buffer + BUFFER_LEN - BIM_STATE_PACK_LEN - CRC_SIZE);
+	control_cmd = control->engine; 
+	return 1;
+}
+
+int check_packet()
+{
+	if (check_uav_bim_state_pack()) return 1;
+	if (check_uav_bim_control_pack()) return 1;
+	return 0;
+}
+
+
+enum
+{
+ UAV_BIM_ENGINE_OFF = 0,
+ UAV_BIM_ENGINE_ON = 1,
+ UAV_BIM_ENGINE_SAFEOFF = 2,
+ UAV_BIM_ENGINE__LAST
+};
+
+
+
+
+
+
 int get_char(){
 	
-  
-
 	if (uart_buffer_cur_len==0){
 		return 0;
 	}
@@ -122,7 +417,8 @@ int get_char(){
 	buffer[BUFFER_LEN-1] = uart_buffer[uart_buffer_read];
 	uart_buffer_cur_len--;
 	
-	CDC_Transmit_FS((uint8_t*)uart_buffer ,BUFFER_LEN);
+	//CDC_Transmit_FS((uint8_t*)uart_buffer ,uart_buffer_cur_len);
+	//CDC_Transmit_FS((uint8_t*)uart_buffer ,BUFFER_LEN);
 	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
 	return 1;
 }	
@@ -176,20 +472,29 @@ int main(void)
   {
 		// Blink--------------------------------------------
 		counter += 1;
-		if (counter>10000000){
+		if (counter>1000000){
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 			counter = 0;
 			//CDC_Transmit_FS((unsigned char*)str_tx, strlen(str_tx));
 			//CDC_Transmit_FS((unsigned char*)uart_buffer, 32);
 			
 		}
-		get_char();
+		if(get_char()) {
+			CDC_Transmit_FS((uint8_t*)uart_buffer ,UART_BUFFER_LEN);
+			HAL_Delay(100);
+			CDC_Transmit_FS("\n" , 1);
+			HAL_Delay(100);
+			CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+			HAL_Delay(100);
+			CDC_Transmit_FS("\n" ,1);
+			HAL_Delay(100);
+			CDC_Transmit_FS("\n" ,1);
+			HAL_Delay(100);
+			
+		}
+		//if(get_char()) CDC_Transmit_FS((uint8_t*)buffer ,uart_buffer_cur_len);
 
-                
-		// --------------------------------------------------
-		
-		//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		//HAL_Delay(100);
+           
 		
 		/*
 		watchdog();
