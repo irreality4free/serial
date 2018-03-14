@@ -122,7 +122,8 @@ int get_char(){
 	buffer[BUFFER_LEN-1] = uart_buffer[uart_buffer_read];
 	uart_buffer_cur_len--;
 	
-	CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	CDC_Transmit_FS((uint8_t*)uart_buffer ,BUFFER_LEN);
+	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
 	return 1;
 }	
 
