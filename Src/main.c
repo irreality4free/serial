@@ -301,11 +301,11 @@ int send_pack(){
 
 
 	*/
-	
+/*	
 void watchdog(){
 	if (packet_wd_timeout > uptime && state==ENABLE){ safe_stop(); }
 }
-
+*/
 int check_header(uint8_t n, uint8_t id, uint8_t version){
 	struct protocol_header_t* h = (struct protocol_header_t*)(buffer + BUFFER_LEN - n - CRC_SIZE - BIM_PACK_HEADER_SIZE);
 	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
@@ -496,17 +496,17 @@ int main(void)
 
            
 		
-		/*
-		watchdog();
+		
+		//watchdog();
 	
 	if (get_char()){
 		
 	if (check_packet()){
 			// got relevant packet. update watchdog timers
-			packet_wd_timeout = uptime + PACKET_WATCHDOG_TIMEOUT; 
-			send_state();
+			//packet_wd_timeout = uptime + PACKET_WATCHDOG_TIMEOUT; 
+		//	send_state();
 		}
-	}*/
+	}
 		//if (get_char()){
 		//	check_packet();
 		//}
