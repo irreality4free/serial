@@ -1,4 +1,6 @@
 serial\main.o: ../Src/main.c
+serial\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+serial\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 serial\main.o: ../Inc/main.h
 serial\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 serial\main.o: ../Inc/stm32f1xx_hal_conf.h
@@ -7,7 +9,6 @@ serial\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h
 serial\main.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 serial\main.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
 serial\main.o: ../Drivers/CMSIS/Include/core_cm3.h
-serial\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 serial\main.o: ../Drivers/CMSIS/Include/core_cmInstr.h
 serial\main.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 serial\main.o: ../Drivers/CMSIS/Include/core_cmFunc.h

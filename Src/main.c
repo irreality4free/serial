@@ -308,14 +308,67 @@ void watchdog(){
 */
 int check_header(uint8_t n, uint8_t id, uint8_t version){
 	struct protocol_header_t* h = (struct protocol_header_t*)(buffer + BUFFER_LEN - n - CRC_SIZE - BIM_PACK_HEADER_SIZE);
-	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	char ans[] = "chekcheckcheck";
+  CDC_Transmit_FS((unsigned char*) ans ,strlen(ans));	
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t mark_= h->marker;
+	CDC_Transmit_FS(&mark_ ,2);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t sz_= h->sz;
+	CDC_Transmit_FS(&sz_ ,2);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t src_= h->src;
+	CDC_Transmit_FS(&src_ ,1);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t dst_= h->dst;
+	CDC_Transmit_FS(&dst_ ,1);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t id_= h->id;
+	CDC_Transmit_FS(&id_ ,1);
+	HAL_Delay(100);
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	uint8_t version_= h->version;
+	CDC_Transmit_FS(&version_ ,1);
+	HAL_Delay(100);
+	
+	CDC_Transmit_FS("\n" , 1);
+	HAL_Delay(100);
+	
+	
+	
+	
+	
 	if (h->marker != 0xFFAE) return 0;
 	if (h->sz != n + CRC_SIZE + HEADER_SIZE) return 0;
 	if (h->src != UAV_ADDRESS) return 0;
 	if (h->dst != BIM_ADDRESS) return 0;
 	if (h->id != id) return 0;
 	if (h->version != version) return 0;
-	return 1;
+	char ans1[] = "found header";
+  CDC_Transmit_FS((unsigned char*) ans1 ,strlen(ans));	
+	return 0;
 }
 
 static inline void protocol_crc_acc(uint8_t v, uint16_t *pcrc)
@@ -361,10 +414,15 @@ int check_uav_bim_state_pack(){
 	#define BIM_STATE_PACK_VER	1
 	if (!check_header(BIM_STATE_PACK_LEN, BIM_STATE_PACK_ID, BIM_STATE_PACK_VER)) return 0;
 	uint16_t crc_comp = protocol_crc_calc(buffer, BUFFER_LEN);
-	if (!check_crc(crc_comp,BIM_CONTROL_PACK_LEN)) return 0;
+	if (!check_crc(crc_comp,BIM_CONTROL_PACK_LEN)){ 
+		return 0;
+		//char ans[] = "its not uav bean state pack";
+  //CDC_Transmit_FS((unsigned char*) ans ,strlen(ans));
+	}
 	struct uav_bim_state_t* state = (struct uav_bim_state_t*)(buffer + BUFFER_LEN - BIM_STATE_PACK_LEN - CRC_SIZE);
 	pos_cmd[0] = state->left_ofs; 
-	pos_cmd[1] = state->right_ofs; 
+	pos_cmd[1] = state->right_ofs;
+	
 	return 1;
 }
 
@@ -382,8 +440,20 @@ int check_uav_bim_control_pack(){
 
 int check_packet()
 {
-	if (check_uav_bim_state_pack()) return 1;
-	if (check_uav_bim_control_pack()) return 1;
+	if (check_uav_bim_state_pack()){
+		
+		char ans[] = "uav bim state pack";
+  CDC_Transmit_FS((unsigned char*) ans ,strlen(ans));	
+		return 1;
+	}
+	if (check_uav_bim_control_pack()){
+		
+		char ans[] = "uav bim control state pack";
+  CDC_Transmit_FS((unsigned char*) ans ,strlen(ans));	
+		return 1;
+	}
+		char ans[] = "no pack";
+  CDC_Transmit_FS((unsigned char*) ans ,strlen(ans));	
 	return 0;
 }
 
@@ -420,6 +490,7 @@ int get_char(){
 	//CDC_Transmit_FS((uint8_t*)uart_buffer ,uart_buffer_cur_len);
 	//CDC_Transmit_FS((uint8_t*)uart_buffer ,BUFFER_LEN);
 	//CDC_Transmit_FS((uint8_t*)buffer ,BUFFER_LEN);
+	//check_packet();
 	return 1;
 }	
 
@@ -480,7 +551,7 @@ int main(void)
 			
 		}
 		if(get_char()) {
-			CDC_Transmit_FS((uint8_t*)uart_buffer ,UART_BUFFER_LEN);
+			//CDC_Transmit_FS((uint8_t*)uart_buffer ,UART_BUFFER_LEN);
 			HAL_Delay(100);
 			CDC_Transmit_FS("\n" , 1);
 			HAL_Delay(100);
@@ -489,6 +560,10 @@ int main(void)
 			CDC_Transmit_FS("\n" ,1);
 			HAL_Delay(100);
 			CDC_Transmit_FS("\n" ,1);
+			HAL_Delay(100);
+			check_header(BIM_CONTROL_PACK_LEN, BIM_CONTROL_PACK_ID, BIM_CONTROL_PACK_VER );
+			HAL_Delay(100);
+			//check_packet();
 			HAL_Delay(100);
 			
 		}
@@ -499,9 +574,9 @@ int main(void)
 		
 		//watchdog();
 	
-	if (get_char()){
+	//if (get_char()){
 		
-	if (check_packet()){
+	//if (check_packet()){
 			// got relevant packet. update watchdog timers
 			//packet_wd_timeout = uptime + PACKET_WATCHDOG_TIMEOUT; 
 		//	send_state();
@@ -516,10 +591,10 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-  }
+ // }
   /* USER CODE END 3 */
 
-}
+//}
 
 /**
   * @brief System Clock Configuration
